@@ -24,6 +24,7 @@ jobs:
       - run: python watcher.py
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          TRELLO_KEY: ${{ secrets.TRELLO_KEY }}
 
       - name: Save last action
         run: |
