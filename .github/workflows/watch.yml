@@ -1,0 +1,34 @@
+name: Watch Trello
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install -r requirements.txt
+
+      - run: python watcher.py
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Save last action
+        run: |
+          git config user.name "trello-watcher"
+          git config user.email "actions@github.com"
+          git add last_action.txt
+          git commit -m "Update last Trello action" || echo "No changes"
+          git push
