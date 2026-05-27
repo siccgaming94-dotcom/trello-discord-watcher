@@ -1,7 +1,7 @@
 import os
 import requests
 
-BOARD_ID = "zNSAT4U"
+BOARD_ID = "zNS5AT4U"
 
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 TRELLO_KEY = os.getenv("TRELLO_KEY")
