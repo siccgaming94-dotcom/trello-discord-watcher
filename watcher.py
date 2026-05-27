@@ -5,6 +5,7 @@ BOARD_ID = "zNSAT4U"
 
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 TRELLO_KEY = os.getenv("TRELLO_KEY")
+TRELLO_TOKEN = os.getenv("TRELLO_TOKEN")
 
 if not DISCORD_WEBHOOK:
     raise Exception("DISCORD_WEBHOOK secret missing!")
@@ -12,16 +13,22 @@ if not DISCORD_WEBHOOK:
 if not TRELLO_KEY:
     raise Exception("TRELLO_KEY secret missing!")
 
+if not TRELLO_TOKEN:
+    raise Exception("TRELLO_TOKEN secret missing!")
+
 STATE_FILE = "last_action.txt"
 
-url = f"https://api.trello.com/1/boards/{BOARD_ID}/actions?limit=5&key={TRELLO_KEY}"
+url = (
+    f"https://api.trello.com/1/boards/{BOARD_ID}/actions"
+    f"?limit=5&key={TRELLO_KEY}&token={TRELLO_TOKEN}"
+)
 
 print("Checking Trello...")
+
 response = requests.get(url, timeout=20)
-
 print("Status:", response.status_code)
-response.raise_for_status()
 
+response.raise_for_status()
 actions = response.json()
 
 if not actions:
@@ -46,13 +53,28 @@ if latest_id != last_id and last_id != "":
     member = latest.get("memberCreator", {}).get("fullName", "Someone")
     short_link = latest.get("data", {}).get("card", {}).get("shortLink", "")
 
-    link = f"https://trello.com/c/{short_link}" if short_link else f"https://trello.com/b/{BOARD_ID}"
+    link = (
+        f"https://trello.com/c/{short_link}"
+        if short_link
+        else f"https://trello.com/b/{BOARD_ID}"
+    )
 
     payload = {
-        "content": f"🚗 **Trello Update Detected**\n\n**Card:** {card}\n**Action:** {action_type}\n**By:** {member}\n\n{link}"
+        "content": (
+            f"🚗 **Trello Update Detected**\n\n"
+            f"**Card:** {card}\n"
+            f"**Action:** {action_type}\n"
+            f"**By:** {member}\n\n"
+            f"{link}"
+        )
     }
 
-    discord_response = requests.post(DISCORD_WEBHOOK, json=payload, timeout=20)
+    discord_response = requests.post(
+        DISCORD_WEBHOOK,
+        json=payload,
+        timeout=20
+    )
+
     print("Discord response:", discord_response.status_code)
 else:
     print("No new update detected, or first run setup.")
